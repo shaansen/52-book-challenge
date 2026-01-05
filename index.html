@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>52-Week Feel-Good Book Challenge</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Georgia", serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 {
+        text-align: center;
+        color: #764ba2;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        font-size: 1.1em;
+        margin-bottom: 40px;
+        font-style: italic;
+      }
+
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+      }
+
+      .week-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        background: #fafafa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .week-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-color: #764ba2;
+      }
+
+      .week-card.completed {
+        background: #e8f5e9;
+        border-color: #4caf50;
+      }
+
+      .week-card.current-week {
+        background: #e3f2fd;
+        border-color: #2196f3;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+      }
+
+      .week-card.past-week {
+        background: #e8f5e9;
+        border-color: #81c784;
+        opacity: 0.85;
+      }
+
+      .week-number {
+        font-size: 0.9em;
+        color: #764ba2;
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
+
+      .week-dates {
+        font-size: 0.8em;
+        color: #999;
+        margin-bottom: 8px;
+      }
+
+      .book-title {
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 6px;
+      }
+
+      .book-author {
+        font-size: 0.95em;
+        color: #666;
+        margin-bottom: 10px;
+      }
+
+      .synopsis {
+        font-size: 0.85em;
+        color: #555;
+        margin-top: 10px;
+        line-height: 1.5;
+      }
+
+      .progress-bar {
+        display: none;
+      }
+
+      .progress-fill {
+        display: none;
+      }
+
+      .controls {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      button {
+        background: #764ba2;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1em;
+        cursor: pointer;
+        margin: 0 10px;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background: #667eea;
+        transform: scale(1.05);
+      }
+
+      .add-book-section {
+        display: none;
+        background: #f5f5f5;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 30px;
+      }
+
+      .add-book-section.visible {
+        display: block;
+      }
+
+      .add-book-section h2 {
+        color: #764ba2;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: bold;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1em;
+        font-family: Georgia, serif;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #764ba2;
+      }
+
+      .btn-add {
+        background: #4caf50;
+        margin-top: 10px;
+      }
+
+      .btn-add:hover {
+        background: #45a049;
+      }
+
+      .loading-message {
+        text-align: center;
+        color: #764ba2;
+        padding: 20px;
+        font-style: italic;
+      }
+
+      .error-message {
+        background: #ffebee;
+        color: #c62828;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+      }
+
+      @media print {
+        body {
+          background: white;
+        }
+        .container {
+          box-shadow: none;
+        }
+        .controls,
+        .add-book-section {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📚 52-Week Feel-Good Book Challenge</h1>
+      <p class="subtitle">Wholesome, uplifting books • All standalone books</p>
+
+      <div class="controls">
+        <button onclick="toggleAddBookSection()">Add a Book</button>
+      </div>
+
+      <div class="add-book-section" id="addBookSection">
+        <h2>Add a Book to Your List</h2>
+        <div class="form-group">
+          <label for="weekNumber">Insert at Week #:</label>
+          <input type="number" id="weekNumber" min="1" placeholder="e.g., 5" />
+        </div>
+        <div class="form-group">
+          <label for="bookTitle">Book Title:</label>
+          <input
+            type="text"
+            id="bookTitle"
+            placeholder="e.g., The Midnight Library"
+          />
+        </div>
+        <div class="form-group">
+          <label for="bookAuthor">Author:</label>
+          <input type="text" id="bookAuthor" placeholder="e.g., Matt Haig" />
+        </div>
+        <button class="btn-add" onclick="addBook()">
+          Add Book & Fetch Synopsis
+        </button>
+        <div id="statusMessage"></div>
+      </div>
+
+      <div class="calendar-grid" id="bookGrid"></div>
+    </div>
+
+    <script>
+      let books = [
+        {
+          week: 1,
+          title: "The Switch",
+          author: "Beth O'Leary",
+          synopsis:
+            "A grandmother and her twentysomething granddaughter swap lives for two months. Heartwarming story about connection and self-discovery.",
+        },
+        {
+          week: 2,
+          title: "The Sword in the Stone",
+          author: "T.H. White",
+          synopsis:
+            "Young Arthur, known as Wart, is tutored by the wizard Merlyn who transforms him into various animals to teach him about life, leadership, and becoming a king.",
+        },
+        {
+          week: 3,
+          title: "The Authenticity Project",
+          author: "Clare Pooley",
+          synopsis:
+            "A green notebook inviting people to share their truth connects six strangers across London in unexpected ways.",
+        },
+        {
+          week: 4,
+          title: "Uprooted",
+          author: "Naomi Novik",
+          synopsis:
+            "A young village woman is chosen by a powerful wizard to serve him, discovering her own magical abilities while battling a corrupt, living Wood.",
+        },
+        {
+          week: 5,
+          title: "The Heart's Invisible Furies",
+          author: "John Boyne",
+          synopsis:
+            "Spanning seven decades, Cyril's journey from 1940s Ireland to present day—finding love, friendship, and acceptance despite rejection.",
+        },
+        {
+          week: 6,
+          title: "Major Pettigrew's Last Stand",
+          author: "Helen Simonson",
+          synopsis:
+            "A retired British officer and a Pakistani shopkeeper's widow form an unlikely friendship in a small English village. Charming romance about finding love later in life.",
+        },
+        {
+          week: 7,
+          title: "Project Hail Mary",
+          author: "Andy Weir",
+          synopsis:
+            "A lone astronaut wakes on a spaceship with no memory, facing a mission to save Earth. Thrilling space adventure with humor and heart.",
+        },
+        {
+          week: 8,
+          title: "The Storied Life of A.J. Fikry",
+          author: "Gabrielle Zevin",
+          synopsis:
+            "A grumpy bookstore owner's life changes when a mysterious package arrives. A love letter to books and second chances.",
+        },
+        {
+          week: 9,
+          title: "The Measure",
+          author: "Nikki Erlick",
+          synopsis:
+            "Everyone receives a box with a string showing their lifespan. Explores how people choose to live knowing how much time they have.",
+        },
+        {
+          week: 10,
+          title: "The Rosie Project",
+          author: "Graeme Simsion",
+          synopsis:
+            "Socially awkward genetics professor creates a questionnaire to find the perfect wife, then meets Rosie who breaks all his rules.",
+        },
+        {
+          week: 11,
+          title: "Eleanor Oliphant Is Completely Fine",
+          author: "Gail Honeyman",
+          synopsis:
+            "Socially isolated Eleanor's structured life changes when she develops a crush and befriends a coworker. About healing and connection.",
+        },
+        {
+          week: 12,
+          title: "The Humans",
+          author: "Matt Haig",
+          synopsis:
+            "An alien sent to Earth discovers what makes humanity beautiful—love, music, peanut butter. Funny and touching celebration of being human.",
+        },
+        {
+          week: 13,
+          title: "The Wedding Date",
+          author: "Jasmine Guillory",
+          synopsis:
+            "Drew and Alexa fake-date through a wedding weekend and have way more fun than expected. Fun contemporary romance.",
+        },
+        {
+          week: 14,
+          title: "Beach Read",
+          author: "Emily Henry",
+          synopsis:
+            "Two writers with opposite styles challenge each other to write in each other's genres while spending summer as neighbors.",
+        },
+        {
+          week: 15,
+          title: "The Guernsey Literary and Potato Peel Pie Society",
+          author: "Mary Ann Shaffer",
+          synopsis:
+            "In 1946, a London writer exchanges letters with Guernsey residents who formed a book club during WWII. Charming and witty.",
+        },
+        {
+          week: 16,
+          title: "The Flatshare",
+          author: "Beth O'Leary",
+          synopsis:
+            "Tiffy and Leon share an apartment but have never met—she has it during day, he has it at night. They communicate through Post-its.",
+        },
+        {
+          week: 17,
+          title: "The Bookish Life of Nina Hill",
+          author: "Abbi Waxman",
+          synopsis:
+            "Bookworm Nina's ordered life is upended when she discovers she has a large family. Cozy and funny, perfect for book lovers.",
+        },
+        {
+          week: 18,
+          title: "Circe",
+          author: "Madeline Miller",
+          synopsis:
+            "The story of the goddess and witch Circe, reimagined as a tale of finding your power and place. Beautiful mythological fantasy.",
+        },
+        {
+          week: 19,
+          title: "The Seven Husbands of Evelyn Hugo",
+          author: "Taylor Jenkins Reid",
+          synopsis:
+            "Aging Hollywood icon Evelyn Hugo tells her life story to an unknown journalist. Compelling tale of love, ambition, and authenticity.",
+        },
+        {
+          week: 20,
+          title: "All the Light We Cannot See",
+          author: "Anthony Doerr",
+          synopsis:
+            "A blind French girl and German boy's paths collide in WWII France. Beautiful story about humanity, hope, and kindness.",
+        },
+        {
+          week: 21,
+          title: "The 100-Year-Old Man Who Climbed Out the Window",
+          author: "Jonas Jonasson",
+          synopsis:
+            "On his 100th birthday, Allan escapes his nursing home and embarks on an absurd adventure. Hilarious and delightfully ridiculous.",
+        },
+        {
+          week: 22,
+          title: "A Gentleman in Moscow",
+          author: "Amor Towles",
+          synopsis:
+            "A Russian aristocrat under house arrest in a grand hotel discovers unexpected joy. Elegant, wise, and deeply satisfying.",
+        },
+        {
+          week: 23,
+          title: "The Princess Bride",
+          author: "William Goldman",
+          synopsis:
+            "The classic tale of true love, adventure, revenge, giants, and rodents of unusual size. Witty, romantic, endlessly quotable.",
+        },
+        {
+          week: 24,
+          title: "Piranesi",
+          author: "Susanna Clarke",
+          synopsis:
+            "A man lives in a mysterious house with infinite rooms flooded by the sea. Enchanting puzzle unfolds as he uncovers truth.",
+        },
+        {
+          week: 25,
+          title: "The Invisible Life of Addie LaRue",
+          author: "V.E. Schwab",
+          synopsis:
+            "A woman makes a Faustian bargain to live forever but be forgotten—until she meets someone who remembers her. Magical and hopeful.",
+        },
+        {
+          week: 26,
+          title: "Icebreaker",
+          author: "Hannah Grace",
+          synopsis:
+            "Figure skater and hockey captain forced to share rink time. Opposites clash then heat up. Sports romance.",
+        },
+        {
+          week: 27,
+          title: "The Five People You Meet in Heaven",
+          author: "Mitch Albom",
+          synopsis:
+            "An elderly amusement park worker meets five people in heaven who explain how his life mattered. Moving meditation on connection.",
+        },
+        {
+          week: 28,
+          title: "The Particular Sadness of Lemon Cake",
+          author: "Aimee Bender",
+          synopsis:
+            "A girl discovers she can taste people's emotions in their food. Magical, poignant story about family, empathy, and growing up with an unusual gift.",
+        },
+        {
+          week: 29,
+          title: "Born a Crime",
+          author: "Trevor Noah",
+          synopsis:
+            "Trevor Noah's hilarious memoir of growing up in South Africa during and after apartheid. Filled with humor, hope, and mother's love.",
+        },
+        {
+          week: 30,
+          title: "The Art of Racing in the Rain",
+          author: "Garth Stein",
+          synopsis:
+            "Narrated by Enzo, a philosophical dog following his owner's life through triumphs and hardships. Touching tribute to human-dog bond.",
+        },
+        {
+          week: 31,
+          title: "The Little Paris Bookshop",
+          author: "Nina George",
+          synopsis:
+            "A Parisian book barge owner sets off through France, dispensing books and wisdom. Lyrical exploration of healing through literature.",
+        },
+        {
+          week: 32,
+          title: "The Marlow Murder Club",
+          author: "Robert Thorogood",
+          synopsis:
+            "A 77-year-old crossword setter witnesses a murder and teams up with two unlikely friends to investigate when police dismiss her story. Charming cozy mystery.",
+        },
+        {
+          week: 33,
+          title: "A Murder for Miss Hortense",
+          author: "Vanessa Riley",
+          synopsis:
+            "A retired Jamaican nurse turned amateur sleuth investigates when an unidentified man is found dead in her Birmingham community. Fearless and unforgettable.",
+        },
+        {
+          week: 34,
+          title: "Tom Lake",
+          author: "Ann Patchett",
+          synopsis:
+            "During pandemic lockdown, a mother tells her daughters about her past as an actress and a summer romance. Tender family story.",
+        },
+        {
+          week: 35,
+          title: "The Unlikely Pilgrimage of Harold Fry",
+          author: "Rachel Joyce",
+          synopsis:
+            "Harold spontaneously decides to walk 600 miles to see a dying friend. Quiet, moving story about redemption and the journey itself.",
+        },
+        {
+          week: 36,
+          title: "The Night Circus",
+          author: "Erin Morgenstern",
+          synopsis:
+            "A magical circus arrives without warning, where two young magicians are bound in a high-stakes competition. Enchanting and romantic.",
+        },
+        {
+          week: 37,
+          title: "The Sweetness at the Bottom of the Pie",
+          author: "Alan Bradley",
+          synopsis:
+            "11-year-old aspiring chemist Flavia de Luce investigates a murder in 1950s England. Charming, witty mystery with delightful protagonist.",
+        },
+        {
+          week: 38,
+          title: "Howl's Moving Castle",
+          author: "Diana Wynne Jones",
+          synopsis:
+            "Sophie is cursed to become old and takes refuge in a wizard's moving castle. Whimsical, magical, full of adventure and romance.",
+        },
+        {
+          week: 39,
+          title: "The Hating Game",
+          author: "Sally Thorne",
+          synopsis:
+            "Two executive assistants who sit across from each other have hated each other for years—until their hate might be something else entirely.",
+        },
+        {
+          week: 40,
+          title: "Klara and the Sun",
+          author: "Kazuo Ishiguro",
+          synopsis:
+            "An Artificial Friend named Klara observes the world, hoping to be chosen by a child. Gentle sci-fi about love and caring.",
+        },
+        {
+          week: 41,
+          title: "The Secret Garden",
+          author: "Frances Hodgson Burnett",
+          synopsis:
+            "Orphaned Mary discovers a hidden garden and helps it—and herself—come back to life. Timeless classic about healing and growth.",
+        },
+        {
+          week: 42,
+          title: "Where'd You Go, Bernadette",
+          author: "Maria Semple",
+          synopsis:
+            "When a brilliant architect disappears, her daughter pieces together what happened through emails and documents. Quirky and heartwarming.",
+        },
+        {
+          week: 43,
+          title: "The Keeper of Lost Things",
+          author: "Ruth Hogan",
+          synopsis:
+            "A man collects lost objects hoping to reunite them with owners. After his death, his assistant continues his mission. Charming tale.",
+        },
+        {
+          week: 44,
+          title: "The House at Riverton",
+          author: "Kate Morton",
+          synopsis:
+            "In 1924, a young poet dies at a party. Decades later, the elderly housemaid who witnessed it tells the true story. Atmospheric mystery.",
+        },
+        {
+          week: 45,
+          title: "The Song of Achilles",
+          author: "Madeline Miller",
+          synopsis:
+            "Achilles and Patroclus' friendship and love, retold through Patroclus' eyes. Beautiful, epic reimagining of Greek mythology.",
+        },
+        {
+          week: 46,
+          title: "Station Eleven",
+          author: "Emily St. John Mandel",
+          synopsis:
+            "Twenty years after a pandemic, a theater troupe performs Shakespeare in settlements. Hopeful post-apocalyptic story about art and humanity.",
+        },
+        {
+          week: 47,
+          title: "The Giver of Stars",
+          author: "Jojo Moyes",
+          synopsis:
+            "Based on true history, women on horseback deliver library books through 1930s Kentucky mountains. Celebrates books and female friendship.",
+        },
+        {
+          week: 48,
+          title: "The Vanishing Half",
+          author: "Brit Bennett",
+          synopsis:
+            "Twin sisters choose divergent paths. Multigenerational story about identity, family, and finding where you belong.",
+        },
+        {
+          week: 49,
+          title: "Commonwealth",
+          author: "Ann Patchett",
+          synopsis:
+            "After a chance encounter, two families' lives intertwine over decades. Warm exploration of blended families and forgiveness.",
+        },
+        {
+          week: 50,
+          title: "Less",
+          author: "Andrew Sean Greer",
+          synopsis:
+            "To avoid his ex's wedding, a failed novelist embarks on a worldwide journey. Hilarious, tender, surprisingly life-affirming.",
+        },
+        {
+          week: 51,
+          title: "The Ten Thousand Doors of January",
+          author: "Alix E. Harrow",
+          synopsis:
+            "A girl discovers a book about magical doors between worlds and realizes it might be about her. Enchanting tale about belonging.",
+        },
+        {
+          week: 52,
+          title: "Tomorrow, and Tomorrow, and Tomorrow",
+          author: "Gabrielle Zevin",
+          synopsis:
+            "Two friends collaborate on video games over three decades. Beautiful story about artistic partnership and enduring connection.",
+        },
+      ];
+
+      // Load books from storage or use default
+      const storedBooks = localStorage.getItem("bookList");
+      if (storedBooks) {
+        books = JSON.parse(storedBooks);
+      }
+
+      let completed = new Set(
+        JSON.parse(localStorage.getItem("completedBooks") || "[]")
+      );
+
+      function toggleAddBookSection() {
+        const section = document.getElementById("addBookSection");
+        section.classList.toggle("visible");
+      }
+
+      function getCurrentWeek() {
+        const startDate = new Date(2026, 0, 4); // Jan 4, 2026
+        const today = new Date();
+        const diffTime = today - startDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const currentWeek = Math.floor(diffDays / 7) + 1;
+        return currentWeek;
+      }
+
+      function saveBooks() {
+        localStorage.setItem("bookList", JSON.stringify(books));
+      }
+
+      async function addBook() {
+        const weekNum = parseInt(document.getElementById("weekNumber").value);
+        const title = document.getElementById("bookTitle").value.trim();
+        const author = document.getElementById("bookAuthor").value.trim();
+        const statusDiv = document.getElementById("statusMessage");
+
+        statusDiv.innerHTML = "";
+
+        if (!weekNum || weekNum < 1) {
+          statusDiv.innerHTML =
+            '<div class="error-message">Please enter a valid week number (1 or greater)</div>';
+          return;
+        }
+
+        if (!title || !author) {
+          statusDiv.innerHTML =
+            '<div class="error-message">Please enter both title and author</div>';
+          return;
+        }
+
+        statusDiv.innerHTML =
+          '<div class="loading-message">Fetching synopsis from Claude API...</div>';
+
+        try {
+          const response = await fetch(
+            "https://api.anthropic.com/v1/messages",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "claude-sonnet-4-20250514",
+                max_tokens: 1000,
+                messages: [
+                  {
+                    role: "user",
+                    content: `Please provide a brief 1-2 sentence synopsis for the book "${title}" by ${author}. Keep it spoiler-free and engaging, similar to a book jacket description. Just give me the synopsis text, no other commentary.`,
+                  },
+                ],
+              }),
+            }
+          );
+
+          const data = await response.json();
+
+          if (data.content && data.content[0] && data.content[0].text) {
+            const synopsis = data.content[0].text.trim();
+
+            // Insert the book and push others down
+            books = books.map((book) => {
+              if (book.week >= weekNum) {
+                return { ...book, week: book.week + 1 };
+              }
+              return book;
+            });
+
+            books.push({
+              week: weekNum,
+              title: title,
+              author: author,
+              synopsis: synopsis,
+            });
+
+            books.sort((a, b) => a.week - b.week);
+
+            saveBooks();
+            renderBooks();
+
+            statusDiv.innerHTML = `<div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-top: 10px;">✓ Successfully added "${title}" at Week ${weekNum}!</div>`;
+
+            document.getElementById("weekNumber").value = "";
+            document.getElementById("bookTitle").value = "";
+            document.getElementById("bookAuthor").value = "";
+          } else {
+            throw new Error("Invalid response from API");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          statusDiv.innerHTML =
+            '<div class="error-message">Failed to fetch synopsis. Please try again or add the book manually with a custom synopsis.</div>';
+        }
+      }
+
+      function getWeekDates(weekNum) {
+        // Start date: Jan 4, 2026 (Saturday)
+        const startDate = new Date(2026, 0, 4);
+
+        // Calculate the start of the week (Sunday)
+        const daysToAdd = (weekNum - 1) * 7;
+        const weekStart = new Date(startDate);
+        weekStart.setDate(startDate.getDate() + daysToAdd);
+
+        // Calculate the end of the week (Saturday)
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+
+        const options = { month: "short", day: "numeric" };
+        const startStr = weekStart.toLocaleDateString("en-US", options);
+        const endStr = weekEnd.toLocaleDateString("en-US", options);
+
+        // Add year if it changes
+        const startYear = weekStart.getFullYear();
+        const endYear = weekEnd.getFullYear();
+
+        if (startYear === endYear) {
+          return `${startStr} - ${endStr}, ${startYear}`;
+        } else {
+          return `${startStr}, ${startYear} - ${endStr}, ${endYear}`;
+        }
+      }
+
+      function renderBooks() {
+        const grid = document.getElementById("bookGrid");
+        grid.innerHTML = "";
+        const currentWeek = getCurrentWeek();
+
+        books.forEach((book) => {
+          const card = document.createElement("div");
+          let cardClass = "week-card";
+
+          if (book.week === currentWeek) {
+            cardClass += " current-week";
+          } else if (book.week < currentWeek) {
+            cardClass += " past-week";
+          }
+
+          if (completed.has(book.week)) {
+            cardClass += " completed";
+          }
+
+          card.className = cardClass;
+          card.onclick = () => toggleComplete(book.week);
+
+          card.innerHTML = `
+                <div class="week-number">Week ${book.week}</div>
+                <div class="week-dates">${getWeekDates(book.week)}</div>
+                <div class="book-title">${book.title}</div>
+                <div class="book-author">by ${book.author}</div>
+                <div class="synopsis">${book.synopsis}</div>
+            `;
+
+          grid.appendChild(card);
+        });
+      }
+
+      function toggleComplete(week) {
+        if (completed.has(week)) {
+          completed.delete(week);
+        } else {
+          completed.add(week);
+        }
+        localStorage.setItem("completedBooks", JSON.stringify([...completed]));
+        renderBooks();
+      }
+
+      renderBooks();
+    </script>
+  </body>
+</html>
