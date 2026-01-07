@@ -314,6 +314,11 @@
       .sync-status.synced {
         background: #e8f5e9;
         color: #2e7d32;
+        cursor: pointer;
+      }
+
+      .sync-status.synced:hover {
+        background: #c8e6c9;
       }
 
       .sync-status.not-synced {
@@ -386,7 +391,7 @@
 
       <div class="controls">
         <button onclick="toggleAddBookSection()">Add a Book</button>
-        <button class="secondary" onclick="toggleSettings()">Settings</button>
+        <button class="secondary" id="settingsButton" onclick="toggleSettings()">Settings</button>
         <button class="secondary" onclick="syncNow()">Sync Now</button>
         <span class="sync-status" id="syncStatus"></span>
       </div>
@@ -1023,6 +1028,8 @@
 
       async function syncNow() {
         const statusEl = document.getElementById("syncStatus");
+        const settingsButton = document.getElementById("settingsButton");
+
         statusEl.textContent = "Syncing...";
         statusEl.className = "sync-status";
 
@@ -1031,8 +1038,9 @@
           statusEl.textContent = "Synced ✓";
           statusEl.className = "sync-status synced";
         } else {
-          statusEl.textContent = "Sync failed";
+          statusEl.textContent = "Sync failed - Check Settings";
           statusEl.className = "sync-status not-synced";
+          settingsButton.style.display = "inline-block"; // Show settings on error
         }
 
         setTimeout(() => {
@@ -1042,15 +1050,26 @@
 
       function updateSyncStatus() {
         const statusEl = document.getElementById("syncStatus");
+        const settingsButton = document.getElementById("settingsButton");
+
         if (githubToken && gistId) {
-          statusEl.textContent = "Synced ✓";
+          // Fully configured and synced - hide Settings button
+          statusEl.textContent = "Configured ✓ (click to change)";
           statusEl.className = "sync-status synced";
+          statusEl.onclick = toggleSettings; // Allow clicking to access settings
+          settingsButton.style.display = "none";
         } else if (githubToken) {
+          // Token set but no gist yet - show Settings button
           statusEl.textContent = "Ready to sync";
           statusEl.className = "sync-status not-synced";
+          statusEl.onclick = null;
+          settingsButton.style.display = "inline-block";
         } else {
+          // Not configured - show Settings button
           statusEl.textContent = "Not configured";
           statusEl.className = "sync-status not-synced";
+          statusEl.onclick = null;
+          settingsButton.style.display = "inline-block";
         }
       }
 
