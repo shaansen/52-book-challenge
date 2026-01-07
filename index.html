@@ -126,6 +126,10 @@
       .controls {
         text-align: center;
         margin-bottom: 30px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
       }
 
       button {
@@ -136,13 +140,21 @@
         border-radius: 25px;
         font-size: 1em;
         cursor: pointer;
-        margin: 0 10px;
+        margin: 0 5px;
         transition: all 0.3s ease;
       }
 
       button:hover {
         background: #667eea;
         transform: scale(1.05);
+      }
+
+      button.secondary {
+        background: #6c757d;
+      }
+
+      button.secondary:hover {
+        background: #5a6268;
       }
 
       .add-book-section {
@@ -212,6 +224,146 @@
         margin-top: 10px;
       }
 
+      .book-cover {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        background: #e0e0e0;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal.visible {
+        display: flex;
+      }
+
+      .modal-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-content h2 {
+        color: #764ba2;
+        margin-bottom: 20px;
+      }
+
+      .modal-content input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1.1em;
+        margin-bottom: 15px;
+        font-family: Georgia, serif;
+      }
+
+      .modal-content input:focus {
+        outline: none;
+        border-color: #764ba2;
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .settings-section {
+        display: none;
+        background: #f5f5f5;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 30px;
+      }
+
+      .settings-section.visible {
+        display: block;
+      }
+
+      .settings-section h2 {
+        color: #764ba2;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+      }
+
+      .sync-status {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 0.85em;
+        margin-left: 10px;
+      }
+
+      .sync-status.synced {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .sync-status.not-synced {
+        background: #fff3e0;
+        color: #f57c00;
+      }
+
+      .book-search-results {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 10px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        background: white;
+      }
+
+      .book-search-result {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .book-search-result:hover {
+        background: #f5f5f5;
+      }
+
+      .book-search-result img {
+        width: 50px;
+        height: 75px;
+        object-fit: cover;
+        border-radius: 4px;
+      }
+
+      .book-search-result-info {
+        flex: 1;
+      }
+
+      .book-search-result-title {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .book-search-result-author {
+        font-size: 0.9em;
+        color: #666;
+      }
+
       @media print {
         body {
           background: white;
@@ -220,7 +372,8 @@
           box-shadow: none;
         }
         .controls,
-        .add-book-section {
+        .add-book-section,
+        .settings-section {
           display: none;
         }
       }
@@ -233,6 +386,27 @@
 
       <div class="controls">
         <button onclick="toggleAddBookSection()">Add a Book</button>
+        <button class="secondary" onclick="toggleSettings()">Settings</button>
+        <button class="secondary" onclick="syncNow()">Sync Now</button>
+        <span class="sync-status" id="syncStatus"></span>
+      </div>
+
+      <div class="settings-section" id="settingsSection">
+        <h2>GitHub Sync Settings</h2>
+        <div class="form-group">
+          <label for="githubToken">GitHub Personal Access Token:</label>
+          <input
+            type="password"
+            id="githubToken"
+            placeholder="ghp_xxxxxxxxxxxx"
+          />
+          <small style="color: #666; display: block; margin-top: 5px;">
+            Create a token at: GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)<br>
+            Required scope: <strong>gist</strong>
+          </small>
+        </div>
+        <button onclick="saveSettings()">Save Settings</button>
+        <div id="settingsMessage"></div>
       </div>
 
       <div class="add-book-section" id="addBookSection">
@@ -242,24 +416,54 @@
           <input type="number" id="weekNumber" min="1" placeholder="e.g., 5" />
         </div>
         <div class="form-group">
+          <label for="bookSearch">Search for a Book:</label>
+          <input
+            type="text"
+            id="bookSearch"
+            placeholder="Type to search by title or author..."
+          />
+          <div id="searchResults" class="book-search-results" style="display: none;"></div>
+        </div>
+        <div class="form-group">
           <label for="bookTitle">Book Title:</label>
           <input
             type="text"
             id="bookTitle"
             placeholder="e.g., The Midnight Library"
+            readonly
           />
         </div>
         <div class="form-group">
           <label for="bookAuthor">Author:</label>
-          <input type="text" id="bookAuthor" placeholder="e.g., Matt Haig" />
+          <input type="text" id="bookAuthor" placeholder="e.g., Matt Haig" readonly />
         </div>
-        <button class="btn-add" onclick="addBook()">
-          Add Book & Fetch Synopsis
+        <input type="hidden" id="bookCover" />
+        <input type="hidden" id="bookDescription" />
+        <button class="btn-add" onclick="addBookToList()">
+          Add Book to Week
         </button>
         <div id="statusMessage"></div>
       </div>
 
       <div class="calendar-grid" id="bookGrid"></div>
+    </div>
+
+    <!-- PIN Modal -->
+    <div class="modal" id="pinModal">
+      <div class="modal-content">
+        <h2>Enter PIN</h2>
+        <input
+          type="password"
+          id="pinInput"
+          placeholder="Enter 4-digit PIN"
+          maxlength="4"
+        />
+        <div class="modal-buttons">
+          <button class="secondary" onclick="closePinModal()">Cancel</button>
+          <button onclick="verifyPin()">Submit</button>
+        </div>
+        <div id="pinError" class="error-message" style="display: none; margin-top: 10px;"></div>
+      </div>
     </div>
 
     <script>
@@ -630,19 +834,224 @@
         },
       ];
 
-      // Load books from storage or use default
-      const storedBooks = localStorage.getItem("bookList");
-      if (storedBooks) {
-        books = JSON.parse(storedBooks);
-      }
+      // Authentication state
+      let isAuthenticated = sessionStorage.getItem("authenticated") === "true";
+      const CORRECT_PIN = "0879";
 
+      // GitHub Gist integration
+      let githubToken = localStorage.getItem("githubToken") || "";
+      let gistId = localStorage.getItem("gistId") || "";
+
+      // Load books from Gist if available, otherwise use local storage or default
       let completed = new Set(
         JSON.parse(localStorage.getItem("completedBooks") || "[]")
       );
 
+      // Initialize - try to load from Gist first
+      async function initializeApp() {
+        await loadFromGist();
+        updateSyncStatus();
+        renderBooks();
+      }
+
+      // PIN Authentication
       function toggleAddBookSection() {
-        const section = document.getElementById("addBookSection");
+        if (!isAuthenticated) {
+          showPinModal();
+        } else {
+          const section = document.getElementById("addBookSection");
+          section.classList.toggle("visible");
+        }
+      }
+
+      function showPinModal() {
+        const modal = document.getElementById("pinModal");
+        modal.classList.add("visible");
+        document.getElementById("pinInput").value = "";
+        document.getElementById("pinError").style.display = "none";
+      }
+
+      function closePinModal() {
+        const modal = document.getElementById("pinModal");
+        modal.classList.remove("visible");
+      }
+
+      function verifyPin() {
+        const input = document.getElementById("pinInput").value;
+        const errorDiv = document.getElementById("pinError");
+
+        if (input === CORRECT_PIN) {
+          isAuthenticated = true;
+          sessionStorage.setItem("authenticated", "true");
+          closePinModal();
+          document.getElementById("addBookSection").classList.add("visible");
+          errorDiv.style.display = "none";
+        } else {
+          errorDiv.textContent = "Incorrect PIN. Please try again.";
+          errorDiv.style.display = "block";
+        }
+      }
+
+      // Settings Functions
+      function toggleSettings() {
+        const section = document.getElementById("settingsSection");
         section.classList.toggle("visible");
+        if (section.classList.contains("visible")) {
+          document.getElementById("githubToken").value = githubToken;
+        }
+      }
+
+      function saveSettings() {
+        const token = document.getElementById("githubToken").value.trim();
+        const messageDiv = document.getElementById("settingsMessage");
+
+        if (token) {
+          githubToken = token;
+          localStorage.setItem("githubToken", token);
+          messageDiv.innerHTML = '<div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-top: 10px;">✓ Settings saved! Click "Sync Now" to sync your books.</div>';
+          updateSyncStatus();
+        } else {
+          messageDiv.innerHTML = '<div class="error-message">Please enter a GitHub token.</div>';
+        }
+      }
+
+      // GitHub Gist Sync Functions
+      async function loadFromGist() {
+        if (!githubToken || !gistId) {
+          // Try to load from localStorage
+          const storedBooks = localStorage.getItem("bookList");
+          if (storedBooks) {
+            books = JSON.parse(storedBooks);
+          }
+          return;
+        }
+
+        try {
+          const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+            headers: {
+              Authorization: `token ${githubToken}`,
+              Accept: "application/vnd.github.v3+json",
+            },
+          });
+
+          if (response.ok) {
+            const gist = await response.json();
+            const content = gist.files["52-books-2026.json"].content;
+            const data = JSON.parse(content);
+            books = data.books || books;
+            completed = new Set(data.completed || []);
+            localStorage.setItem("bookList", JSON.stringify(books));
+            localStorage.setItem("completedBooks", JSON.stringify([...completed]));
+          }
+        } catch (error) {
+          console.error("Error loading from Gist:", error);
+          // Fallback to localStorage
+          const storedBooks = localStorage.getItem("bookList");
+          if (storedBooks) {
+            books = JSON.parse(storedBooks);
+          }
+        }
+      }
+
+      async function saveToGist() {
+        if (!githubToken) {
+          // Just save to localStorage
+          localStorage.setItem("bookList", JSON.stringify(books));
+          localStorage.setItem("completedBooks", JSON.stringify([...completed]));
+          return;
+        }
+
+        const data = {
+          books: books,
+          completed: [...completed],
+          lastUpdated: new Date().toISOString(),
+        };
+
+        const gistData = {
+          description: "52-Week Book Challenge 2026",
+          public: false,
+          files: {
+            "52-books-2026.json": {
+              content: JSON.stringify(data, null, 2),
+            },
+          },
+        };
+
+        try {
+          let response;
+          if (gistId) {
+            // Update existing gist
+            response = await fetch(`https://api.github.com/gists/${gistId}`, {
+              method: "PATCH",
+              headers: {
+                Authorization: `token ${githubToken}`,
+                Accept: "application/vnd.github.v3+json",
+              },
+              body: JSON.stringify(gistData),
+            });
+          } else {
+            // Create new gist
+            response = await fetch("https://api.github.com/gists", {
+              method: "POST",
+              headers: {
+                Authorization: `token ${githubToken}`,
+                Accept: "application/vnd.github.v3+json",
+              },
+              body: JSON.stringify(gistData),
+            });
+          }
+
+          if (response.ok) {
+            const gist = await response.json();
+            gistId = gist.id;
+            localStorage.setItem("gistId", gistId);
+            localStorage.setItem("bookList", JSON.stringify(books));
+            localStorage.setItem("completedBooks", JSON.stringify([...completed]));
+            updateSyncStatus();
+            return true;
+          } else {
+            throw new Error("Failed to sync");
+          }
+        } catch (error) {
+          console.error("Error saving to Gist:", error);
+          // Fallback to localStorage
+          localStorage.setItem("bookList", JSON.stringify(books));
+          localStorage.setItem("completedBooks", JSON.stringify([...completed]));
+          return false;
+        }
+      }
+
+      async function syncNow() {
+        const statusEl = document.getElementById("syncStatus");
+        statusEl.textContent = "Syncing...";
+        statusEl.className = "sync-status";
+
+        const success = await saveToGist();
+        if (success) {
+          statusEl.textContent = "Synced ✓";
+          statusEl.className = "sync-status synced";
+        } else {
+          statusEl.textContent = "Sync failed";
+          statusEl.className = "sync-status not-synced";
+        }
+
+        setTimeout(() => {
+          updateSyncStatus();
+        }, 3000);
+      }
+
+      function updateSyncStatus() {
+        const statusEl = document.getElementById("syncStatus");
+        if (githubToken && gistId) {
+          statusEl.textContent = "Synced ✓";
+          statusEl.className = "sync-status synced";
+        } else if (githubToken) {
+          statusEl.textContent = "Ready to sync";
+          statusEl.className = "sync-status not-synced";
+        } else {
+          statusEl.textContent = "Not configured";
+          statusEl.className = "sync-status not-synced";
+        }
       }
 
       function getCurrentWeek() {
@@ -655,13 +1064,88 @@
       }
 
       function saveBooks() {
-        localStorage.setItem("bookList", JSON.stringify(books));
+        saveToGist();
       }
 
-      async function addBook() {
+      // Open Library API Book Search
+      let searchTimeout;
+      document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("bookSearch");
+        if (searchInput) {
+          searchInput.addEventListener("input", function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length < 3) {
+              document.getElementById("searchResults").style.display = "none";
+              return;
+            }
+
+            searchTimeout = setTimeout(() => searchBooks(query), 500);
+          });
+        }
+      });
+
+      async function searchBooks(query) {
+        const resultsDiv = document.getElementById("searchResults");
+        resultsDiv.innerHTML = '<div style="padding: 12px; color: #666;">Searching...</div>';
+        resultsDiv.style.display = "block";
+
+        try {
+          const response = await fetch(
+            `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=10`
+          );
+          const data = await response.json();
+
+          if (data.docs && data.docs.length > 0) {
+            resultsDiv.innerHTML = "";
+            data.docs.slice(0, 10).forEach((book) => {
+              const title = book.title || "Unknown Title";
+              const author = book.author_name ? book.author_name[0] : "Unknown Author";
+              const coverId = book.cover_i;
+              const coverUrl = coverId
+                ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`
+                : "";
+              const description = book.first_sentence ? book.first_sentence[0] : "";
+
+              const resultDiv = document.createElement("div");
+              resultDiv.className = "book-search-result";
+              resultDiv.onclick = () => selectBook(title, author, coverUrl, description);
+
+              resultDiv.innerHTML = `
+                ${coverUrl ? `<img src="${coverUrl}" alt="${title}">` : '<div style="width: 50px; height: 75px; background: #ddd; border-radius: 4px;"></div>'}
+                <div class="book-search-result-info">
+                  <div class="book-search-result-title">${title}</div>
+                  <div class="book-search-result-author">${author}</div>
+                </div>
+              `;
+
+              resultsDiv.appendChild(resultDiv);
+            });
+          } else {
+            resultsDiv.innerHTML = '<div style="padding: 12px; color: #666;">No results found</div>';
+          }
+        } catch (error) {
+          console.error("Search error:", error);
+          resultsDiv.innerHTML = '<div style="padding: 12px; color: #c62828;">Search failed. Please try again.</div>';
+        }
+      }
+
+      function selectBook(title, author, coverUrl, description) {
+        document.getElementById("bookTitle").value = title;
+        document.getElementById("bookAuthor").value = author;
+        document.getElementById("bookCover").value = coverUrl;
+        document.getElementById("bookDescription").value = description;
+        document.getElementById("searchResults").style.display = "none";
+        document.getElementById("bookSearch").value = "";
+      }
+
+      async function addBookToList() {
         const weekNum = parseInt(document.getElementById("weekNumber").value);
         const title = document.getElementById("bookTitle").value.trim();
         const author = document.getElementById("bookAuthor").value.trim();
+        const coverUrl = document.getElementById("bookCover").value.trim();
+        const description = document.getElementById("bookDescription").value.trim();
         const statusDiv = document.getElementById("statusMessage");
 
         statusDiv.innerHTML = "";
@@ -674,72 +1158,42 @@
 
         if (!title || !author) {
           statusDiv.innerHTML =
-            '<div class="error-message">Please enter both title and author</div>';
+            '<div class="error-message">Please select a book from search results</div>';
           return;
         }
 
-        statusDiv.innerHTML =
-          '<div class="loading-message">Fetching synopsis from Claude API...</div>';
-
-        try {
-          const response = await fetch(
-            "https://api.anthropic.com/v1/messages",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: "claude-sonnet-4-20250514",
-                max_tokens: 1000,
-                messages: [
-                  {
-                    role: "user",
-                    content: `Please provide a brief 1-2 sentence synopsis for the book "${title}" by ${author}. Keep it spoiler-free and engaging, similar to a book jacket description. Just give me the synopsis text, no other commentary.`,
-                  },
-                ],
-              }),
-            }
-          );
-
-          const data = await response.json();
-
-          if (data.content && data.content[0] && data.content[0].text) {
-            const synopsis = data.content[0].text.trim();
-
-            // Insert the book and push others down
-            books = books.map((book) => {
-              if (book.week >= weekNum) {
-                return { ...book, week: book.week + 1 };
-              }
-              return book;
-            });
-
-            books.push({
-              week: weekNum,
-              title: title,
-              author: author,
-              synopsis: synopsis,
-            });
-
-            books.sort((a, b) => a.week - b.week);
-
-            saveBooks();
-            renderBooks();
-
-            statusDiv.innerHTML = `<div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-top: 10px;">✓ Successfully added "${title}" at Week ${weekNum}!</div>`;
-
-            document.getElementById("weekNumber").value = "";
-            document.getElementById("bookTitle").value = "";
-            document.getElementById("bookAuthor").value = "";
-          } else {
-            throw new Error("Invalid response from API");
+        // Insert the book and push others down
+        books = books.map((book) => {
+          if (book.week >= weekNum) {
+            return { ...book, week: book.week + 1 };
           }
-        } catch (error) {
-          console.error("Error:", error);
-          statusDiv.innerHTML =
-            '<div class="error-message">Failed to fetch synopsis. Please try again or add the book manually with a custom synopsis.</div>';
-        }
+          return book;
+        });
+
+        books.push({
+          week: weekNum,
+          title: title,
+          author: author,
+          synopsis: description || `A book by ${author}`,
+          coverUrl: coverUrl || "",
+        });
+
+        books.sort((a, b) => a.week - b.week);
+
+        await saveBooks();
+        renderBooks();
+
+        statusDiv.innerHTML = `<div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-top: 10px;">✓ Successfully added "${title}" at Week ${weekNum}!</div>`;
+
+        document.getElementById("weekNumber").value = "";
+        document.getElementById("bookTitle").value = "";
+        document.getElementById("bookAuthor").value = "";
+        document.getElementById("bookCover").value = "";
+        document.getElementById("bookDescription").value = "";
+
+        setTimeout(() => {
+          document.getElementById("addBookSection").classList.remove("visible");
+        }, 2000);
       }
 
       function getWeekDates(weekNum) {
@@ -792,7 +1246,12 @@
           card.className = cardClass;
           card.onclick = () => toggleComplete(book.week);
 
+          const coverHtml = book.coverUrl
+            ? `<img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.style.display='none'">`
+            : "";
+
           card.innerHTML = `
+                ${coverHtml}
                 <div class="week-number">Week ${book.week}</div>
                 <div class="week-dates">${getWeekDates(book.week)}</div>
                 <div class="book-title">${book.title}</div>
@@ -811,10 +1270,12 @@
           completed.add(week);
         }
         localStorage.setItem("completedBooks", JSON.stringify([...completed]));
+        saveToGist();
         renderBooks();
       }
 
-      renderBooks();
+      // Initialize the app
+      initializeApp();
     </script>
   </body>
 </html>
