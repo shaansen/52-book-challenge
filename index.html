@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="theme-color" content="#764ba2" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="52 Books 2026" />
     <title>52-Week Feel-Good Book Challenge</title>
     <style>
       * {
@@ -14,8 +18,10 @@
       body {
         font-family: "Georgia", serif;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
+        padding: 10px;
         min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
       .container {
@@ -23,46 +29,106 @@
         margin: 0 auto;
         background: white;
         border-radius: 20px;
-        padding: 40px;
+        padding: 20px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      @media (min-width: 768px) {
+        body {
+          padding: 20px;
+        }
+        .container {
+          padding: 40px;
+        }
       }
 
       h1 {
         text-align: center;
         color: #764ba2;
-        font-size: 2.5em;
+        font-size: 1.75em;
         margin-bottom: 10px;
+        line-height: 1.2;
+      }
+
+      @media (min-width: 768px) {
+        h1 {
+          font-size: 2.5em;
+        }
       }
 
       .subtitle {
         text-align: center;
         color: #666;
-        font-size: 1.1em;
-        margin-bottom: 40px;
+        font-size: 0.95em;
+        margin-bottom: 20px;
         font-style: italic;
+      }
+
+      @media (min-width: 768px) {
+        .subtitle {
+          font-size: 1.1em;
+          margin-bottom: 40px;
+        }
       }
 
       .calendar-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      @media (min-width: 480px) {
+        .calendar-grid {
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 15px;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .calendar-grid {
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+          margin-bottom: 40px;
+        }
       }
 
       .week-card {
         border: 2px solid #e0e0e0;
         border-radius: 12px;
-        padding: 20px;
+        padding: 12px;
         background: #fafafa;
         transition: all 0.3s ease;
         cursor: pointer;
         position: relative;
+        min-height: 240px;
+        display: flex;
+        flex-direction: column;
+        -webkit-tap-highlight-color: rgba(118, 75, 162, 0.1);
+        touch-action: manipulation;
       }
 
-      .week-card:hover {
+      @media (min-width: 768px) {
+        .week-card {
+          padding: 20px;
+          min-height: 280px;
+        }
+      }
+
+      .week-card:hover,
+      .week-card:active {
         transform: translateY(-5px);
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         border-color: #764ba2;
+      }
+
+      @media (hover: none) {
+        .week-card:hover {
+          transform: none;
+        }
+        .week-card:active {
+          transform: scale(0.98);
+        }
       }
 
       .week-card.completed {
@@ -80,6 +146,28 @@
         background: #e8f5e9;
         border-color: #81c784;
         opacity: 0.85;
+      }
+
+      .book-cover-view {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+      }
+
+      .book-details-view {
+        display: none;
+        flex-direction: column;
+        flex: 1;
+      }
+
+      .week-card.show-details .book-cover-view {
+        display: none;
+      }
+
+      .week-card.show-details .book-details-view {
+        display: flex;
       }
 
       .week-number {
@@ -125,35 +213,64 @@
 
       .controls {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         display: flex;
-        gap: 10px;
+        gap: 8px;
         justify-content: center;
         flex-wrap: wrap;
+      }
+
+      @media (min-width: 768px) {
+        .controls {
+          margin-bottom: 30px;
+          gap: 10px;
+        }
       }
 
       button {
         background: #764ba2;
         color: white;
         border: none;
-        padding: 12px 30px;
+        padding: 10px 20px;
         border-radius: 25px;
-        font-size: 1em;
+        font-size: 0.9em;
         cursor: pointer;
-        margin: 0 5px;
+        margin: 0;
         transition: all 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        min-height: 44px;
       }
 
-      button:hover {
+      @media (min-width: 768px) {
+        button {
+          padding: 12px 30px;
+          font-size: 1em;
+          margin: 0 5px;
+        }
+      }
+
+      button:hover,
+      button:active {
         background: #667eea;
         transform: scale(1.05);
+      }
+
+      @media (hover: none) {
+        button:hover {
+          transform: none;
+        }
+        button:active {
+          transform: scale(0.95);
+        }
       }
 
       button.secondary {
         background: #6c757d;
       }
 
-      button.secondary:hover {
+      button.secondary:hover,
+      button.secondary:active {
         background: #5a6268;
       }
 
@@ -188,11 +305,13 @@
 
       .form-group input {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
         border: 2px solid #ddd;
         border-radius: 8px;
-        font-size: 1em;
+        font-size: 16px;
         font-family: Georgia, serif;
+        -webkit-appearance: none;
+        appearance: none;
       }
 
       .form-group input:focus {
@@ -226,11 +345,75 @@
 
       .book-cover {
         width: 100%;
-        height: 180px;
+        max-width: 140px;
+        height: 200px;
         object-fit: cover;
         border-radius: 8px;
-        margin-bottom: 12px;
         background: #e0e0e0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      @media (min-width: 768px) {
+        .book-cover {
+          max-width: 200px;
+          height: 240px;
+        }
+      }
+
+      .book-cover-view .book-cover {
+        margin: auto;
+      }
+
+      .book-details-view .book-cover {
+        width: 60px;
+        height: 90px;
+        float: left;
+        margin-right: 10px;
+        margin-bottom: 8px;
+      }
+
+      @media (min-width: 768px) {
+        .book-details-view .book-cover {
+          width: 80px;
+          height: 120px;
+          margin-right: 12px;
+        }
+      }
+
+      .complete-checkbox {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        accent-color: #4caf50;
+      }
+
+      .book-cover-placeholder {
+        width: 100%;
+        max-width: 140px;
+        height: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.85em;
+        font-weight: bold;
+        text-align: center;
+        padding: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      @media (min-width: 768px) {
+        .book-cover-placeholder {
+          max-width: 200px;
+          height: 240px;
+          font-size: 1.2em;
+          padding: 20px;
+        }
       }
 
       .modal {
@@ -305,19 +488,29 @@
 
       .sync-status {
         display: inline-block;
-        padding: 5px 12px;
+        padding: 5px 10px;
         border-radius: 12px;
-        font-size: 0.85em;
-        margin-left: 10px;
+        font-size: 0.75em;
+        margin-left: 5px;
+      }
+
+      @media (min-width: 768px) {
+        .sync-status {
+          padding: 5px 12px;
+          font-size: 0.85em;
+          margin-left: 10px;
+        }
       }
 
       .sync-status.synced {
         background: #e8f5e9;
         color: #2e7d32;
         cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
       }
 
-      .sync-status.synced:hover {
+      .sync-status.synced:hover,
+      .sync-status.synced:active {
         background: #c8e6c9;
       }
 
@@ -1320,23 +1513,50 @@
           }
 
           card.className = cardClass;
-          card.onclick = () => toggleComplete(book.week);
 
-          const coverHtml = book.coverUrl
+          // Create cover view (default)
+          const coverView = document.createElement("div");
+          coverView.className = "book-cover-view";
+
+          if (book.coverUrl) {
+            coverView.innerHTML = `
+              <img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.outerHTML='<div class=\\'book-cover-placeholder\\'>${book.title}</div>'">
+            `;
+          } else {
+            coverView.innerHTML = `
+              <div class="book-cover-placeholder">${book.title}</div>
+            `;
+          }
+
+          // Create details view
+          const detailsView = document.createElement("div");
+          detailsView.className = "book-details-view";
+
+          const coverThumb = book.coverUrl
             ? `<img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.style.display='none'">`
             : "";
 
-          card.innerHTML = `
-                ${coverHtml}
-                <div class="week-number">Week ${book.week}</div>
-                <div class="week-dates">${getWeekDates(book.week)}</div>
-                <div class="book-title">${book.title}</div>
-                <div class="book-author">by ${book.author}</div>
-                <div class="synopsis">${book.synopsis}</div>
-            `;
+          detailsView.innerHTML = `
+            <input type="checkbox" class="complete-checkbox" ${completed.has(book.week) ? 'checked' : ''} onclick="event.stopPropagation(); toggleComplete(${book.week})">
+            <div class="week-number">Week ${book.week}</div>
+            <div class="week-dates">${getWeekDates(book.week)}</div>
+            ${coverThumb}
+            <div class="book-title">${book.title}</div>
+            <div class="book-author">by ${book.author}</div>
+            <div class="synopsis">${book.synopsis}</div>
+          `;
 
+          // Toggle between views on click
+          card.onclick = () => toggleCardView(card);
+
+          card.appendChild(coverView);
+          card.appendChild(detailsView);
           grid.appendChild(card);
         });
+      }
+
+      function toggleCardView(card) {
+        card.classList.toggle("show-details");
       }
 
       function toggleComplete(week) {
