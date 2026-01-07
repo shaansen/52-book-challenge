@@ -101,7 +101,7 @@
         transition: all 0.3s ease;
         cursor: pointer;
         position: relative;
-        min-height: 240px;
+        height: 320px;
         display: flex;
         flex-direction: column;
         -webkit-tap-highlight-color: rgba(118, 75, 162, 0.1);
@@ -111,7 +111,7 @@
       @media (min-width: 768px) {
         .week-card {
           padding: 20px;
-          min-height: 280px;
+          height: 380px;
         }
       }
 
@@ -132,8 +132,13 @@
       }
 
       .week-card.completed {
-        background: #e8f5e9;
-        border-color: #4caf50;
+        opacity: 0.6;
+      }
+
+      .week-card.completed .book-cover,
+      .week-card.completed .book-cover-placeholder {
+        opacity: 0.7;
+        filter: grayscale(0.3);
       }
 
       .week-card.current-week {
@@ -143,9 +148,8 @@
       }
 
       .week-card.past-week {
-        background: #e8f5e9;
-        border-color: #81c784;
-        opacity: 0.85;
+        background: #fff9e6;
+        border-color: #ffc107;
       }
 
       .book-cover-view {
@@ -160,6 +164,8 @@
         display: none;
         flex-direction: column;
         flex: 1;
+        padding: 10px 0;
+        overflow-y: auto;
       }
 
       .week-card.show-details .book-cover-view {
@@ -168,6 +174,11 @@
 
       .week-card.show-details .book-details-view {
         display: flex;
+      }
+
+      .book-info {
+        flex: 1;
+        overflow-y: auto;
       }
 
       .week-number {
@@ -345,9 +356,9 @@
 
       .book-cover {
         width: 100%;
-        max-width: 140px;
-        height: 200px;
-        object-fit: cover;
+        max-width: 160px;
+        height: 240px;
+        object-fit: contain;
         border-radius: 8px;
         background: #e0e0e0;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -356,28 +367,12 @@
       @media (min-width: 768px) {
         .book-cover {
           max-width: 200px;
-          height: 240px;
+          height: 300px;
         }
       }
 
       .book-cover-view .book-cover {
         margin: auto;
-      }
-
-      .book-details-view .book-cover {
-        width: 60px;
-        height: 90px;
-        float: left;
-        margin-right: 10px;
-        margin-bottom: 8px;
-      }
-
-      @media (min-width: 768px) {
-        .book-details-view .book-cover {
-          width: 80px;
-          height: 120px;
-          margin-right: 12px;
-        }
       }
 
       .complete-checkbox {
@@ -392,8 +387,8 @@
 
       .book-cover-placeholder {
         width: 100%;
-        max-width: 140px;
-        height: 200px;
+        max-width: 160px;
+        height: 240px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 8px;
         display: flex;
@@ -410,7 +405,7 @@
       @media (min-width: 768px) {
         .book-cover-placeholder {
           max-width: 200px;
-          height: 240px;
+          height: 300px;
           font-size: 1.2em;
           padding: 20px;
         }
@@ -1532,18 +1527,15 @@
           const detailsView = document.createElement("div");
           detailsView.className = "book-details-view";
 
-          const coverThumb = book.coverUrl
-            ? `<img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.style.display='none'">`
-            : "";
-
           detailsView.innerHTML = `
             <input type="checkbox" class="complete-checkbox" ${completed.has(book.week) ? 'checked' : ''} onclick="event.stopPropagation(); toggleComplete(${book.week})">
             <div class="week-number">Week ${book.week}</div>
             <div class="week-dates">${getWeekDates(book.week)}</div>
-            ${coverThumb}
-            <div class="book-title">${book.title}</div>
-            <div class="book-author">by ${book.author}</div>
-            <div class="synopsis">${book.synopsis}</div>
+            <div class="book-info">
+              <div class="book-title">${book.title}</div>
+              <div class="book-author">by ${book.author}</div>
+              <div class="synopsis">${book.synopsis}</div>
+            </div>
           `;
 
           // Toggle between views on click
