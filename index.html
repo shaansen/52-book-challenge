@@ -3,11 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-    <meta name="theme-color" content="#764ba2" />
+    <meta name="theme-color" content="#FF6B6B" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="52 Books 2026" />
     <title>52-Week Feel-Good Book Challenge</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
       * {
         margin: 0;
@@ -16,12 +22,20 @@
       }
 
       body {
-        font-family: "Georgia", serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 25%, #4ECDC4 50%, #95E1D3 75%, #C7CEEA 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
         padding: 10px;
         min-height: 100vh;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+      }
+
+      @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
       }
 
       .container {
@@ -43,30 +57,37 @@
       }
 
       h1 {
+        font-family: "Fredoka", sans-serif;
         text-align: center;
-        color: #764ba2;
+        color: #FF6B6B;
         font-size: 1.75em;
         margin-bottom: 10px;
         line-height: 1.2;
+        font-weight: 700;
+        text-shadow: 3px 3px 0px rgba(255, 230, 109, 0.5),
+                     6px 6px 0px rgba(78, 205, 196, 0.3);
+        letter-spacing: -0.5px;
       }
 
       @media (min-width: 768px) {
         h1 {
-          font-size: 2.5em;
+          font-size: 3em;
         }
       }
 
       .subtitle {
+        font-family: "Fredoka", sans-serif;
         text-align: center;
-        color: #666;
+        color: #2C3E50;
         font-size: 0.95em;
         margin-bottom: 20px;
-        font-style: italic;
+        font-weight: 500;
+        letter-spacing: 0.5px;
       }
 
       @media (min-width: 768px) {
         .subtitle {
-          font-size: 1.1em;
+          font-size: 1.2em;
           margin-bottom: 40px;
         }
       }
@@ -94,18 +115,19 @@
       }
 
       .week-card {
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
+        border: 3px solid #2C3E50;
+        border-radius: 16px;
         padding: 12px;
-        background: #fafafa;
-        transition: all 0.3s ease;
+        background: white;
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         cursor: pointer;
         position: relative;
         height: 320px;
         display: flex;
         flex-direction: column;
-        -webkit-tap-highlight-color: rgba(118, 75, 162, 0.1);
+        -webkit-tap-highlight-color: rgba(255, 107, 107, 0.1);
         touch-action: manipulation;
+        box-shadow: 5px 5px 0px rgba(44, 62, 80, 0.2);
       }
 
       @media (min-width: 768px) {
@@ -117,9 +139,10 @@
 
       .week-card:hover,
       .week-card:active {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        border-color: #764ba2;
+        transform: translateY(-8px) rotate(-1deg);
+        box-shadow: 8px 8px 0px rgba(255, 107, 107, 0.4),
+                    12px 12px 0px rgba(78, 205, 196, 0.3);
+        border-color: #FF6B6B;
       }
 
       @media (hover: none) {
@@ -127,29 +150,37 @@
           transform: none;
         }
         .week-card:active {
-          transform: scale(0.98);
+          transform: scale(0.97) rotate(-1deg);
         }
       }
 
       .week-card.completed {
         opacity: 0.6;
+        filter: grayscale(0.5);
       }
 
       .week-card.completed .book-cover,
       .week-card.completed .book-cover-placeholder {
         opacity: 0.7;
-        filter: grayscale(0.3);
+        filter: grayscale(0.4);
       }
 
       .week-card.current-week {
-        background: #e3f2fd;
-        border-color: #2196f3;
-        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        background: linear-gradient(135deg, #FFE66D 0%, #FFEB99 100%);
+        border-color: #FF6B6B;
+        box-shadow: 6px 6px 0px rgba(255, 107, 107, 0.5),
+                    0 0 30px rgba(255, 230, 109, 0.5);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
       }
 
       .week-card.past-week {
-        background: #fff9e6;
-        border-color: #ffc107;
+        background: linear-gradient(135deg, #95E1D3 0%, #B8F2E6 100%);
+        border-color: #4ECDC4;
       }
 
       .book-cover-view {
@@ -182,36 +213,43 @@
       }
 
       .week-number {
+        font-family: "Fredoka", sans-serif;
         font-size: 0.9em;
-        color: #764ba2;
-        font-weight: bold;
+        color: #FF6B6B;
+        font-weight: 700;
         margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
       }
 
       .week-dates {
-        font-size: 0.8em;
-        color: #999;
+        font-size: 0.75em;
+        color: #4ECDC4;
         margin-bottom: 8px;
+        font-weight: 600;
       }
 
       .book-title {
+        font-family: "Fredoka", sans-serif;
         font-size: 1.1em;
-        font-weight: bold;
-        color: #333;
+        font-weight: 600;
+        color: #2C3E50;
         margin-bottom: 6px;
+        line-height: 1.3;
       }
 
       .book-author {
-        font-size: 0.95em;
-        color: #666;
+        font-size: 0.9em;
+        color: #4ECDC4;
         margin-bottom: 10px;
+        font-weight: 500;
       }
 
       .synopsis {
         font-size: 0.85em;
-        color: #555;
+        color: #5A6C7D;
         margin-top: 10px;
-        line-height: 1.5;
+        line-height: 1.6;
       }
 
       .progress-bar {
@@ -239,18 +277,23 @@
       }
 
       button {
-        background: #764ba2;
+        font-family: "Fredoka", sans-serif;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
         color: white;
-        border: none;
+        border: 3px solid #2C3E50;
         padding: 10px 20px;
-        border-radius: 25px;
+        border-radius: 50px;
         font-size: 0.9em;
+        font-weight: 600;
         cursor: pointer;
         margin: 0;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
         min-height: 44px;
+        box-shadow: 4px 4px 0px rgba(44, 62, 80, 0.3);
+        text-transform: lowercase;
+        letter-spacing: 0.5px;
       }
 
       @media (min-width: 768px) {
@@ -263,8 +306,10 @@
 
       button:hover,
       button:active {
-        background: #667eea;
-        transform: scale(1.05);
+        background: linear-gradient(135deg, #FFE66D 0%, #FFF099 100%);
+        color: #2C3E50;
+        transform: translateY(-3px);
+        box-shadow: 6px 6px 0px rgba(255, 107, 107, 0.4);
       }
 
       @media (hover: none) {
@@ -272,25 +317,29 @@
           transform: none;
         }
         button:active {
-          transform: scale(0.95);
+          transform: translateY(2px);
+          box-shadow: 2px 2px 0px rgba(44, 62, 80, 0.3);
         }
       }
 
       button.secondary {
-        background: #6c757d;
+        background: linear-gradient(135deg, #4ECDC4 0%, #6FE0D8 100%);
       }
 
       button.secondary:hover,
       button.secondary:active {
-        background: #5a6268;
+        background: linear-gradient(135deg, #95E1D3 0%, #B8F2E6 100%);
+        color: #2C3E50;
       }
 
       .add-book-section {
         display: none;
-        background: #f5f5f5;
-        border-radius: 12px;
+        background: white;
+        border: 3px solid #2C3E50;
+        border-radius: 20px;
         padding: 25px;
         margin-bottom: 30px;
+        box-shadow: 6px 6px 0px rgba(255, 107, 107, 0.3);
       }
 
       .add-book-section.visible {
@@ -298,9 +347,11 @@
       }
 
       .add-book-section h2 {
-        color: #764ba2;
+        font-family: "Fredoka", sans-serif;
+        color: #FF6B6B;
         margin-bottom: 20px;
         font-size: 1.5em;
+        font-weight: 700;
       }
 
       .form-group {
@@ -309,34 +360,41 @@
 
       .form-group label {
         display: block;
-        margin-bottom: 5px;
-        color: #333;
-        font-weight: bold;
+        margin-bottom: 8px;
+        color: #2C3E50;
+        font-family: "Fredoka", sans-serif;
+        font-weight: 600;
+        font-size: 0.95em;
       }
 
       .form-group input {
         width: 100%;
         padding: 12px;
-        border: 2px solid #ddd;
-        border-radius: 8px;
+        border: 3px solid #2C3E50;
+        border-radius: 12px;
         font-size: 16px;
-        font-family: Georgia, serif;
+        font-family: "Inter", sans-serif;
         -webkit-appearance: none;
         appearance: none;
+        background: white;
+        transition: all 0.3s ease;
       }
 
       .form-group input:focus {
         outline: none;
-        border-color: #764ba2;
+        border-color: #FF6B6B;
+        box-shadow: 4px 4px 0px rgba(255, 107, 107, 0.3);
+        transform: translateY(-2px);
       }
 
       .btn-add {
-        background: #4caf50;
+        background: linear-gradient(135deg, #4ECDC4 0%, #44D2C8 100%);
         margin-top: 10px;
       }
 
-      .btn-add:hover {
-        background: #45a049;
+      .btn-add:hover,
+      .btn-add:active {
+        background: linear-gradient(135deg, #95E1D3 0%, #B8F2E6 100%);
       }
 
       .loading-message {
@@ -389,24 +447,27 @@
         width: 100%;
         max-width: 160px;
         height: 240px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 8px;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 50%, #4ECDC4 100%);
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
+        font-family: "Fredoka", sans-serif;
         font-size: 0.85em;
-        font-weight: bold;
+        font-weight: 700;
         text-align: center;
         padding: 15px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 5px 5px 0px rgba(44, 62, 80, 0.3);
+        border: 3px solid #2C3E50;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
       }
 
       @media (min-width: 768px) {
         .book-cover-placeholder {
           max-width: 200px;
           height: 300px;
-          font-size: 1.2em;
+          font-size: 1.1em;
           padding: 20px;
         }
       }
@@ -465,10 +526,12 @@
 
       .settings-section {
         display: none;
-        background: #f5f5f5;
-        border-radius: 12px;
+        background: white;
+        border: 3px solid #2C3E50;
+        border-radius: 20px;
         padding: 25px;
         margin-bottom: 30px;
+        box-shadow: 6px 6px 0px rgba(78, 205, 196, 0.3);
       }
 
       .settings-section.visible {
@@ -476,42 +539,50 @@
       }
 
       .settings-section h2 {
-        color: #764ba2;
+        font-family: "Fredoka", sans-serif;
+        color: #4ECDC4;
         margin-bottom: 20px;
         font-size: 1.5em;
+        font-weight: 700;
       }
 
       .sync-status {
         display: inline-block;
-        padding: 5px 10px;
-        border-radius: 12px;
+        padding: 6px 12px;
+        border-radius: 20px;
         font-size: 0.75em;
         margin-left: 5px;
+        font-family: "Fredoka", sans-serif;
+        font-weight: 600;
+        border: 2px solid #2C3E50;
+        transition: all 0.3s ease;
       }
 
       @media (min-width: 768px) {
         .sync-status {
-          padding: 5px 12px;
+          padding: 8px 16px;
           font-size: 0.85em;
           margin-left: 10px;
         }
       }
 
       .sync-status.synced {
-        background: #e8f5e9;
-        color: #2e7d32;
+        background: linear-gradient(135deg, #95E1D3 0%, #B8F2E6 100%);
+        color: #2C3E50;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
       }
 
       .sync-status.synced:hover,
       .sync-status.synced:active {
-        background: #c8e6c9;
+        background: linear-gradient(135deg, #4ECDC4 0%, #6FE0D8 100%);
+        transform: translateY(-2px);
+        box-shadow: 3px 3px 0px rgba(78, 205, 196, 0.4);
       }
 
       .sync-status.not-synced {
-        background: #fff3e0;
-        color: #f57c00;
+        background: linear-gradient(135deg, #FFE66D 0%, #FFF099 100%);
+        color: #2C3E50;
       }
 
       .book-search-results {
