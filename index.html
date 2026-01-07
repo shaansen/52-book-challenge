@@ -1097,9 +1097,13 @@
       // Initialize - try to load from Gist first
       async function initializeApp() {
         await loadFromGist();
-        await fetchMissingCovers(); // Fetch covers for books that don't have them
         updateSyncStatus();
-        renderBooks();
+        renderBooks(); // Render books immediately
+
+        // Fetch covers in background, then re-render when done
+        fetchMissingCovers().then(() => {
+          renderBooks(); // Re-render with covers
+        });
       }
 
       // PIN Authentication
