@@ -443,11 +443,39 @@
       .complete-checkbox {
         position: absolute;
         top: 10px;
-        right: 10px;
+        right: 40px;
         width: 24px;
         height: 24px;
         cursor: pointer;
         accent-color: #4caf50;
+      }
+
+      .delete-button {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+        border: 2px solid #2C3E50;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        z-index: 10;
+      }
+
+      .delete-button:hover {
+        background: linear-gradient(135deg, #FFE66D 0%, #FFF099 100%);
+        transform: scale(1.1);
+      }
+
+      .delete-button::before {
+        content: '🗑️';
+        filter: grayscale(0);
       }
 
       .book-cover-placeholder {
@@ -1175,8 +1203,17 @@
           isAuthenticated = true;
           sessionStorage.setItem("authenticated", "true");
           closePinModal();
-          document.getElementById("addBookSection").classList.add("visible");
           errorDiv.style.display = "none";
+
+          // Check if there's a pending delete
+          if (window.pendingDeleteWeek) {
+            const week = window.pendingDeleteWeek;
+            window.pendingDeleteWeek = null;
+            deleteBook(week);
+          } else {
+            // Normal add book flow
+            document.getElementById("addBookSection").classList.add("visible");
+          }
         } else {
           errorDiv.textContent = "Incorrect PIN. Please try again.";
           errorDiv.style.display = "block";
@@ -1565,6 +1602,7 @@
 
           detailsView.innerHTML = `
             <input type="checkbox" class="complete-checkbox" ${completed.has(book.week) ? 'checked' : ''} onclick="event.stopPropagation(); toggleComplete(${book.week})">
+            <div class="delete-button" onclick="event.stopPropagation(); deleteBook(${book.week})" title="Delete this book"></div>
             <div class="week-number">Week ${book.week}</div>
             <div class="week-dates">${getWeekDates(book.week)}</div>
             <div class="book-info">
@@ -1596,6 +1634,48 @@
         localStorage.setItem("completedBooks", JSON.stringify([...completed]));
         saveToGist();
         renderBooks();
+      }
+
+      // Delete book function with PIN protection
+      function deleteBook(week) {
+        if (!isAuthenticated) {
+          showPinModal();
+          // Store the week to delete after authentication
+          window.pendingDeleteWeek = week;
+          return;
+        }
+
+        const book = books.find(b => b.week === week);
+        if (!book) return;
+
+        if (confirm(`Delete "${book.title}" from Week ${week}?\n\nThis will shift all following books up by one week.`)) {
+          // Remove the book
+          books = books.filter(b => b.week !== week);
+
+          // Renumber subsequent books
+          books = books.map(b => {
+            if (b.week > week) {
+              return { ...b, week: b.week - 1 };
+            }
+            return b;
+          });
+
+          // Update completed set (shift week numbers down)
+          const newCompleted = new Set();
+          completed.forEach(w => {
+            if (w < week) {
+              newCompleted.add(w);
+            } else if (w > week) {
+              newCompleted.add(w - 1);
+            }
+            // Skip the deleted week
+          });
+          completed = newCompleted;
+
+          localStorage.setItem("completedBooks", JSON.stringify([...completed]));
+          saveBooks();
+          renderBooks();
+        }
       }
 
       // Initialize the app
