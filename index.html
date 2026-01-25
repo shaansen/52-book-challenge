@@ -687,6 +687,7 @@
         <button onclick="toggleAddBookSection()">Add a Book</button>
         <button class="secondary" id="settingsButton" onclick="toggleSettings()">Settings</button>
         <button class="secondary" onclick="syncNow()">Sync Now</button>
+        <button class="secondary" onclick="refreshApp()" title="Refresh to get latest updates">Refresh</button>
         <span class="sync-status" id="syncStatus"></span>
       </div>
 
@@ -766,6 +767,13 @@
     </div>
 
     <script>
+      // Helper function to escape HTML to prevent XSS
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
       // Helper function to slugify book titles for cover filenames
       function slugify(title) {
         return title
@@ -1455,10 +1463,10 @@
               resultDiv.onclick = () => selectBook(title, author, coverUrl, description);
 
               resultDiv.innerHTML = `
-                ${coverUrl ? `<img src="${coverUrl}" alt="${title}">` : '<div style="width: 50px; height: 75px; background: #ddd; border-radius: 4px;"></div>'}
+                ${coverUrl ? `<img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(title)}">` : '<div style="width: 50px; height: 75px; background: #ddd; border-radius: 4px;"></div>'}
                 <div class="book-search-result-info">
-                  <div class="book-search-result-title">${title}</div>
-                  <div class="book-search-result-author">${author}</div>
+                  <div class="book-search-result-title">${escapeHtml(title)}</div>
+                  <div class="book-search-result-author">${escapeHtml(author)}</div>
                 </div>
               `;
 
@@ -1511,6 +1519,18 @@
           }
           return book;
         });
+
+        // Shift completed weeks up (books at weekNum and after moved up by 1)
+        const newCompleted = new Set();
+        completed.forEach(w => {
+          if (w < weekNum) {
+            newCompleted.add(w);
+          } else {
+            newCompleted.add(w + 1);
+          }
+        });
+        completed = newCompleted;
+        localStorage.setItem("completedBooks", JSON.stringify([...completed]));
 
         books.push({
           week: weekNum,
@@ -1592,8 +1612,9 @@
           coverView.className = "book-cover-view";
 
           const coverUrl = getCoverUrl(book);
+          const safeTitle = escapeHtml(book.title);
           coverView.innerHTML = `
-            <img src="${coverUrl}" alt="${book.title}" class="book-cover" onerror="this.outerHTML='<div class=\\'book-cover-placeholder\\'>${book.title}</div>'">
+            <img src="${escapeHtml(coverUrl)}" alt="${safeTitle}" class="book-cover" onerror="this.outerHTML='<div class=\\'book-cover-placeholder\\'>${safeTitle}</div>'">
           `;
 
           // Create details view
@@ -1606,9 +1627,9 @@
             <div class="week-number">Week ${book.week}</div>
             <div class="week-dates">${getWeekDates(book.week)}</div>
             <div class="book-info">
-              <div class="book-title">${book.title}</div>
-              <div class="book-author">by ${book.author}</div>
-              <div class="synopsis">${book.synopsis}</div>
+              <div class="book-title">${safeTitle}</div>
+              <div class="book-author">by ${escapeHtml(book.author)}</div>
+              <div class="synopsis">${escapeHtml(book.synopsis)}</div>
             </div>
           `;
 
@@ -1675,6 +1696,35 @@
           localStorage.setItem("completedBooks", JSON.stringify([...completed]));
           saveBooks();
           renderBooks();
+        }
+      }
+
+      // Refresh app (for PWA/Add to Home Screen)
+      async function refreshApp() {
+        // Show feedback
+        const statusEl = document.getElementById("syncStatus");
+        statusEl.textContent = "Refreshing...";
+        statusEl.className = "sync-status";
+
+        try {
+          // Clear service worker caches if available
+          if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
+          }
+
+          // Unregister service workers if any
+          if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map(reg => reg.unregister()));
+          }
+
+          // Force reload from server (bypass cache)
+          window.location.reload(true);
+        } catch (error) {
+          console.error("Refresh error:", error);
+          // Fallback to simple reload
+          window.location.reload(true);
         }
       }
 
